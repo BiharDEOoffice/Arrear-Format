@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0d6efd">
-<title>PRAPTRA-1 - Salary Difference Statement (Customisable)</title>
+<title><title>Bihar DEO Office ✅ - Arrear Format </title></title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -36,7 +36,7 @@ button,input,select{ font-family:inherit; }
 .app{ width:100%; max-width:1300px; margin:auto; }
 
 .app::before{
-  content:"PRAPTRA-1 ✅ Salary Difference Statement (Fully Customisable)";
+  content:"Bihar DEO Office ✅ - Arrear Format";
   display:block; margin-bottom:8px; padding:11px 14px 10px;
   background:var(--ink); color:#fff; font-family:var(--font-head); font-weight:800;
   font-size:15px; letter-spacing:.3px; border-radius:6px; border-bottom:3px solid var(--red);
@@ -157,10 +157,20 @@ th .comp-del{
 }
 
 .signatures{
-  margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:20px;
+  margin-top:24px; display:grid; gap:16px;
   font-size:12px; font-weight:700; text-align:center;
 }
-.sig{ border-top:1px dashed #666; padding-top:20px; }
+.sig{ border-top:1px dashed #666; padding-top:20px; white-space:pre-line; }
+
+.sig-editor-item{
+  display:flex; align-items:center; gap:6px; background:#fff;
+  border:1.5px solid var(--edge); border-radius:6px; padding:6px 6px 6px 10px; margin-bottom:7px;
+}
+.sig-editor-item input{
+  flex:1; min-height:36px; padding:6px 8px; border:1.5px solid var(--edge-2); border-radius:6px;
+  font-size:12.5px; font-weight:600; color:var(--ink);
+}
+.sig-editor-item button{ min-height:32px; min-width:34px; padding:3px 8px; font-size:13px; }
 
 /* ============ DIALOG ============ */
 .dialog-bg{
@@ -298,6 +308,15 @@ th .comp-del{
     </div>
   </div>
 
+  <div class="collapse-head" id="sigHead" onclick="toggleCollapse('sigBox','sigHead')">
+    <span>✍️ Signature Blocks Customize (नाम/लेबल Add, Remove, Edit करें)</span>
+    <span>▼</span>
+  </div>
+  <div class="collapse-content" id="sigBox">
+    <div id="sigEditorList" style="margin-top:6px"></div>
+    <button class="primary" onclick="addSignature()">＋ Signature Block जोड़ें</button>
+  </div>
+
   <div class="status" id="saveStatus">✓ Auto-save चालू है</div>
 </div>
 
@@ -329,10 +348,7 @@ th .comp-del{
     </table>
     </div>
 
-    <div class="signatures">
-      <div class="sig">विशिष्ट शिक्षक का हस्ताक्षर</div>
-      <div class="sig">प्रधानाध्यापक</div>
-    </div>
+    <div class="signatures" id="signaturesRow"></div>
 
   </div>
 </div>
@@ -373,6 +389,12 @@ let periodToDate = "2025-10-31";
 let defaultRate = "50";
 
 let rows = []; // {month:"YYYY-MM", rate, admissible:{id:val}, drawn:{id:val}, nps}
+
+let signatures = [
+  "विशिष्ट शिक्षक का हस्ताक्षर",
+  "प्रधानाध्यापक का हस्ताक्षर",
+  "प्रखंड शिक्षा पदाधिकारी का हस्ताक्षर"
+];
 
 function n(v){ const x = Number(v); return isNaN(x) ? 0 : x; }
 
@@ -518,6 +540,51 @@ function confirmRemoveComponent(){
   const id = document.getElementById("delCompSelect").value;
   closeRemoveComponentModal();
   removeComponentById(id);
+}
+
+/* ================= SIGNATURE BLOCKS ================= */
+
+function renderSignatures(){
+  renderSignatureEditor();
+  renderSignaturePreview();
+}
+
+function renderSignatureEditor(){
+  const editor = document.getElementById("sigEditorList");
+  editor.innerHTML = signatures.map((label, i) => `
+    <div class="sig-editor-item">
+      <input value="${esc(label)}" oninput="updateSignatureLabel(${i}, this.value)" placeholder="Signature Label">
+      <button class="danger" onclick="removeSignature(${i})" ${signatures.length<=1 ? "disabled" : ""}>✕</button>
+    </div>
+  `).join("");
+}
+
+function renderSignaturePreview(){
+  const row = document.getElementById("signaturesRow");
+  row.style.gridTemplateColumns = `repeat(${signatures.length}, 1fr)`;
+  row.innerHTML = signatures.map(label => `<div class="sig">${esc(label)}</div>`).join("");
+}
+
+function updateSignatureLabel(index, value){
+  signatures[index] = value;
+  renderSignaturePreview();
+  autoSave();
+}
+
+function addSignature(){
+  signatures.push(`Signature ${signatures.length+1}`);
+  renderSignatures();
+  autoSave();
+}
+
+function removeSignature(index){
+  if(signatures.length <= 1){
+    alert("कम से कम एक Signature Block रखना आवश्यक है।");
+    return;
+  }
+  signatures.splice(index,1);
+  renderSignatures();
+  autoSave();
 }
 
 /* ================= ROW CALCULATIONS ================= */
@@ -717,7 +784,7 @@ function toggleCollapse(boxId, headId){
 function autoSave(){
   try{
     localStorage.setItem(DATA_KEY, JSON.stringify({
-      rows, details, components, compCounter, periodFromDate, periodToDate, defaultRate
+      rows, details, components, compCounter, periodFromDate, periodToDate, defaultRate, signatures
     }));
     const status = document.getElementById("saveStatus");
     if(status) status.textContent = "✓ Auto-saved • " + new Date().toLocaleTimeString("hi-IN");
@@ -741,6 +808,7 @@ function loadData(){
       if(data.periodToDate) periodToDate = data.periodToDate;
       if(data.defaultRate) defaultRate = data.defaultRate;
       if(Array.isArray(data.rows) && data.rows.length) rows = data.rows;
+      if(Array.isArray(data.signatures) && data.signatures.length) signatures = data.signatures;
     }catch(e){ console.error(e); }
   }
 
@@ -761,6 +829,7 @@ function loadData(){
 
   renderHeader();
   renderTable();
+  renderSignatures();
 }
 
 function clearData(){
